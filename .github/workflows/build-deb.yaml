@@ -25,7 +25,7 @@ jobs:
       - name: Add bookworm src repo
         run: echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
       - name: Add target arch
-        if: matrix.architecture != "amd64"
+        if: matrix.architecture != 'amd64'
         run: dpkg --add-architecture ${{ matrix.architecture }}
       - name: Update apt repository
         run: apt update
