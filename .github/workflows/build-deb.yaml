@@ -34,7 +34,7 @@ jobs:
       - name: Install source package
         run: apt source ${{ format('isc-kea={0}-{1}', inputs.KEA_VERSION, inputs.DEBIAN_VERSION) }}
       - name: Install build deps
-        run: apt build-dep ${{ matrix.architecture == 'amd64' || format('-a{0}', matrix.architecture) }} isc-kea
+        run: apt build-dep ${{ matrix.architecture == 'amd64' && '' || format('-a{0}', matrix.architecture) }} isc-kea
       - name: Build native package
         if: matrix.architecture == 'amd64'
         working-directory: ${{ format('./isc-kea-{0}', inputs.KEA_VERSION) }}
