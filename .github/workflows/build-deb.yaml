@@ -15,7 +15,7 @@ on:
 jobs:
   build-kea:
     runs-on: ubuntu-latest
-    container: debian-bullseye
+    container: debian:bullseye
     strategy:
       matrix:
         architecture: [amd64, arm64, armhf]
