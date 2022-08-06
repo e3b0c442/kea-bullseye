@@ -30,11 +30,11 @@ jobs:
       - name: Update apt repository
         run: apt update
       - name: Install build essential
-        run: apt -y install build-essential ${{ matrix.architecture == 'amd64' || format('crossbuild-essential-{0}', matrix.architecture) }}
+        run: apt -y install build-essential ${{ matrix.architecture == 'amd64' && '' || format('crossbuild-essential-{0}', matrix.architecture) }}
       - name: Install source package
         run: apt source ${{ format('isc-kea={0}-{1}', inputs.KEA_VERSION, inputs.DEBIAN_VERSION) }}
       - name: Install build deps
-        run: apt build-dep ${{ matrix.architecture == 'amd64' || format('-a{0}', matrix.architecture) }} isc-kea=${{ inputs.KEA_VERSION }}-${{ inputs.DEBIAN_VERSION }}
+        run: apt build-dep ${{ matrix.architecture == 'amd64' || format('-a{0}', matrix.architecture) }} isc-kea
       - name: Build native package
         if: matrix.architecture == 'amd64'
         working-directory: ${{ format('./isc-kea-{0}', inputs.KEA_VERSION) }}
