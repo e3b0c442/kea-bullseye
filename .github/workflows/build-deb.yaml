@@ -1,0 +1,52 @@
+name: build-kea-for-bookworm
+
+on:
+  workflow_dispatch:
+    inputs:
+      KEA_VERSION:
+        type: string
+        required: true
+        description: Kea source package version
+      DEBIAN_VERSION:
+        type: string
+        required: true
+        description: Debian subvenrsion
+
+jobs:
+  build-kea:
+    runs-on: ubuntu-latest
+    container: debian-bullseye
+    strategy:
+      matrix:
+        architecture: [amd64, arm64, armhf]
+      fail-fast: false
+
+    steps:
+      - name: Add bookworm src repo
+        run: echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+      - name: Add target arch
+        if: matrix.architecture != "amd64"
+        run: dpkg --add-architecture ${{ matrix.architecture }}
+      - name: Update apt repository
+        run: apt update
+      - name: Install build essential
+        run: apt -y install build-essential ${{ matrix.architecture == "amd64" || format('crossbuild-essential-{0}', matrix.architecture) }}
+      - name: Install source package
+        run: apt source ${{ format('isc-kea={0}-{1}', inputs.KEA_VERSION, inputs.DEBIAN_VERSION) }}
+      - name: Install build deps
+        run: apt build-dep ${{ matrix.architecture == "amd64" || format('-a{0}', matrix.architecture) }} isc-kea=${{ inputs.KEA_VERSION }}-${{ inputs.DEBIAN_VERSION }}
+      - name: Build native package
+        if: matrix.architecture == "amd64"
+        working-directory: ${{ format('./isc-kea-{0}', inputs.KEA_VERSION) }}
+        env:
+          DEB_BUILD_OPTIONS: nocheck
+        run: dpkg-buildpackage -Pnocheck
+      - name: Build cross-compiled package
+        if: matrix.architecture != "amd64"
+        working-directory: ${{ format('./isc-kea-{0}', inputs.KEA_VERSION) }}
+        env:
+          DEB_BUILD_OPTIONS: nocheck
+        run: dpkg-buildpackage -a${{ matrix.architecture }} -Pcross,nocheck
+
+
+      
